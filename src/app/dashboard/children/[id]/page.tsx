@@ -58,7 +58,7 @@ export default function ChildDetailPage() {
   useAuth();
 
   const { loading: childLoading, getChildById } = useChildren();
-  const { logs, stats } = useLogs({ childId });
+  const { logs } = useLogs({ childId });
   
   const [child, setChild] = useState<ChildWithRelation | null>(null);
   const [activeTab, setActiveTab] = useState('overview');
