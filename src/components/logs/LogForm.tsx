@@ -187,17 +187,14 @@ function MoodSelector({ value, onChange }: MoodSelectorProps) {
 }
 
 function AttachmentsManager({ attachments, onChange, childId }: AttachmentsManagerProps) {
-  const [uploading, setUploading] = useState(false);
-  const { user } = useAuth();
+
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || !user) return;
-
     try {
       setUploading(true);
       const newAttachments: LogAttachment[] = [];
-
       for (const file of Array.from(files)) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${childId}/${Date.now()}-${file.name}`;
@@ -211,14 +208,13 @@ function AttachmentsManager({ attachments, onChange, childId }: AttachmentsManag
         else if (file.type.startsWith('audio/')) type = 'audio';
         
         newAttachments.push({
-          id: `${Date.now()}-${Math.random()}`,
+          id: `${Date.now()}-${crypto.getRandomValues(new Uint32Array(1))[0]}`
           name: file.name,
           url,
           type,
           size: file.size
         });
       }
-
       onChange([...attachments, ...newAttachments]);
     } catch (error) {
       console.error('Error uploading files:', error);
@@ -226,6 +222,8 @@ function AttachmentsManager({ attachments, onChange, childId }: AttachmentsManag
       setUploading(false);
     }
   };
+
+}
 
   const removeAttachment = (id: string) => {
     onChange(attachments.filter(att => att.id !== id));
