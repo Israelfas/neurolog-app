@@ -1,14 +1,33 @@
 // src/app/dashboard/calendar/page.tsx
-// Página de calendario corregida - Error de SonarQube solucionado
-
 'use client';
-
 import { useState, useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar as CalendarIcon, Plus, Clock, Users, ChevronLeft, ChevronRight } from 'lucide-react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday } from 'date-fns';
+import {
+  Calendar as CalendarIcon,
+  Plus,
+  Clock,
+  Users,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday
+} from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export default function CalendarPage() {
@@ -24,6 +43,11 @@ export default function CalendarPage() {
     return eachDayOfInterval({ start, end });
   }, [currentDate]);
 
+  // Solución: Generar marcadores de forma estable
+  const randomMarkers = useMemo(() => {
+    return calendarDays.map(() => Math.random() > 0.8);
+  }, [calendarDays]);
+
   const handlePrevMonth = () => {
     setCurrentDate(prev => subMonths(prev, 1));
   };
@@ -36,15 +60,9 @@ export default function CalendarPage() {
     setCurrentDate(new Date());
   };
 
-  // Función determinística para mostrar eventos
-  const shouldShowEvent = (day: Date) => {
-    // Mostrar evento en días divisibles por 3 (puedes ajustar esta lógica)
-    return day.getDate() % 3 === 0;
-  };
-
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Header Responsivo */}
+      {/* Header */}
       <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
         <div className="space-y-1 sm:space-y-2">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Calendario</h1>
@@ -106,9 +124,9 @@ export default function CalendarPage() {
                 {day}
               </div>
             ))}
-            
+
             {/* Calendar days */}
-            {calendarDays.map((day) => (
+            {calendarDays.map((day, index) => (
               <div
                 key={day.toISOString()}
                 className={`
@@ -119,8 +137,7 @@ export default function CalendarPage() {
                 `}
               >
                 {format(day, 'd')}
-                {/* Mostrar evento basado en condición determinística */}
-                {shouldShowEvent(day) && (
+                {randomMarkers[index] && (
                   <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
                 )}
               </div>
@@ -129,7 +146,7 @@ export default function CalendarPage() {
         </CardContent>
       </Card>
 
-      {/* Coming Soon Card - Mejorada */}
+      {/* Coming Soon Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center text-base sm:text-lg">
@@ -149,8 +166,8 @@ export default function CalendarPage() {
             <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 max-w-md mx-auto">
               El módulo de calendario está siendo desarrollado. Próximamente podrás:
             </p>
-            
-            {/* Feature list - Responsive */}
+
+            {/* Feature list */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 max-w-4xl mx-auto">
               <div className="flex items-center justify-center sm:justify-start p-3 bg-gray-50 rounded-lg">
                 <Clock className="h-4 w-4 mr-2 text-blue-600 flex-shrink-0" />
