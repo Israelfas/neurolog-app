@@ -1,5 +1,5 @@
 // src/app/dashboard/calendar/page.tsx
-// Página de calendario corregida - Error de variable no utilizada solucionado
+// Página de calendario corregida - Error de SonarQube solucionado
 
 'use client';
 
@@ -14,7 +14,6 @@ import { es } from 'date-fns/locale';
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Ahora usamos currentDate y setCurrentDate
   const currentMonth = useMemo(() => {
     return format(currentDate, 'MMMM yyyy', { locale: es });
   }, [currentDate]);
@@ -35,6 +34,12 @@ export default function CalendarPage() {
 
   const handleToday = () => {
     setCurrentDate(new Date());
+  };
+
+  // Función determinística para mostrar eventos
+  const shouldShowEvent = (day: Date) => {
+    // Mostrar evento en días divisibles por 3 (puedes ajustar esta lógica)
+    return day.getDate() % 3 === 0;
   };
 
   return (
@@ -114,8 +119,8 @@ export default function CalendarPage() {
                 `}
               >
                 {format(day, 'd')}
-                {/* Placeholder for events */}
-                {Math.random() > 0.8 && (
+                {/* Mostrar evento basado en condición determinística */}
+                {shouldShowEvent(day) && (
                   <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-500 rounded-full"></div>
                 )}
               </div>
