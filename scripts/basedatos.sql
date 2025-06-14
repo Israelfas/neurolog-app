@@ -308,14 +308,14 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION user_can_edit_child(child_uuid UUID)
 RETURNS BOOLEAN AS $$
 DECLARE
-    edit_allowed BOOLEAN;
+    has_permission BOOLEAN;
 BEGIN
-    SELECT COUNT(*) > 0 INTO edit_allowed
+    SELECT COUNT(*) > 0 INTO has_permission
     FROM children 
     WHERE id = child_uuid 
       AND created_by = auth.uid();
     
-    RETURN edit_allowed;
+    RETURN has_permission;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
@@ -327,42 +327,41 @@ CREATE OR REPLACE FUNCTION audit_sensitive_access(
 )
 RETURNS VOID AS $$
 DECLARE
-    user_role_value TEXT;
-    audit_data JSONB;
+  user_role TEXT;
 BEGIN
-    -- Obtener el rol del usuario primero
-    SELECT role INTO user_role_value FROM profiles WHERE id = auth.uid();
-    
-    -- Construir el objeto JSON una sola vez
-    audit_data := jsonb_build_object(
+  -- Get user role first to avoid potential issues in the main insert
+  SELECT role INTO user_role FROM profiles WHERE id = auth.uid();
+  
+  BEGIN
+    INSERT INTO audit_logs (
+      table_name,
+      operation,
+      record_id,
+      user_id,
+      user_role,
+      new_values,
+      risk_level
+    ) VALUES (
+      'sensitive_access',
+      'SELECT',
+      resource_id,
+      auth.uid(),
+      user_role,
+      jsonb_build_object(
         'action_type', action_type,
         'details', action_details,
         'timestamp', NOW()
+      ),
+      'medium'
     );
-    
-    BEGIN
-        INSERT INTO audit_logs (
-            table_name,
-            operation,
-            record_id,
-            user_id,
-            user_role,
-            new_values,
-            risk_level
-        ) VALUES (
-            'sensitive_access',
-            'SELECT',
-            resource_id,
-            auth.uid(),
-            user_role_value,
-            audit_data,
-            'medium'
-        );
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE LOG 'Error en auditoría: %', SQLERRM;
-            -- No fallar pero registrar el error
-    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      -- Log the error to PostgreSQL logs
+      RAISE LOG 'Failed to audit sensitive access: %', SQLERRM;
+      -- Optionally insert into an error log table if available
+      -- INSERT INTO error_logs (error_message, function_name) 
+      -- VALUES (SQLERRM, 'audit_sensitive_access');
+  END;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
