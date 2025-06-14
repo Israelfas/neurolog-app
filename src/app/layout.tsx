@@ -52,15 +52,41 @@ function LayoutErrorFallback() {
 }
 
 export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+  children
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="es">
       <body className={inter.className}>
         {/* ✅ ERROR BOUNDARY PRINCIPAL QUE ENVUELVE TODO */}
-        <ErrorBoundary fallback={<LayoutErrorFallback />}>
+        <ErrorBoundary 
+        fallback={
+          <html lang="es">
+            <body className={inter.className}>
+              <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+                <div className="text-center max-w-md">
+                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-red-600 text-2xl">⚠️</span>
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-3">
+                    Error crítico
+                  </h1>
+                  <p className="text-gray-600 mb-6">
+                    Ha ocurrido un error inesperado en la aplicación
+                  </p>
+                  <button 
+                    onClick={() => window.location.href = '/'}
+                    className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Volver al inicio
+                  </button>
+                </div>
+              </div>
+            </body>
+          </html>
+        }
+      >
           {/* ✅ AUTH PROVIDER PROTEGIDO POR ERROR BOUNDARY */}
           <ErrorBoundary 
             fallback={
