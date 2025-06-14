@@ -388,30 +388,19 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
   -- Vista para estadísticas de logs por niño
 CREATE OR REPLACE VIEW child_log_statistics AS
-WITH filtered_logs AS (
-    SELECT 
-        child_id,
-        log_date,
-        mood_score,
-        category_id,
-        is_private,
-        reviewed_at
-    FROM daily_logs
-    WHERE is_deleted = false
-)
 SELECT 
-    c.id as child_id,
-    c.name as child_name,
-    COUNT(dl.child_id) as total_logs,
-    COUNT(CASE WHEN dl.log_date >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) as logs_this_week,
-    COUNT(CASE WHEN dl.log_date >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) as logs_this_month,
-    ROUND(AVG(dl.mood_score::numeric), 2) as avg_mood_score,
-    MAX(dl.log_date) as last_log_date,
-    COUNT(DISTINCT dl.category_id) as categories_used,
-    COUNT(CASE WHEN dl.is_private THEN 1 END) as private_logs,
-    COUNT(CASE WHEN dl.reviewed_at IS NOT NULL THEN 1 END) as reviewed_logs
+  c.id AS child_id,
+  c.name AS child_name,
+  COUNT(dl.id) AS total_logs,
+  COUNT(CASE WHEN dl.log_date >= CURRENT_DATE - INTERVAL '7 days' THEN 1 END) AS logs_this_week,
+  COUNT(CASE WHEN dl.log_date >= CURRENT_DATE - INTERVAL '30 days' THEN 1 END) AS logs_this_month,
+  ROUND(AVG(dl.mood_score), 2) AS avg_mood_score,
+  MAX(dl.log_date) AS last_log_date,
+  COUNT(DISTINCT dl.category_id) AS categories_used,
+  COUNT(CASE WHEN dl.is_private = true THEN 1 END) AS private_logs,
+  COUNT(CASE WHEN dl.reviewed_at IS NOT NULL THEN 1 END) AS reviewed_logs
 FROM children c
-LEFT JOIN filtered_logs dl ON c.id = dl.child_id
+LEFT JOIN daily_logs dl ON c.id = dl.child_id AND NOT dl.is_deleted
 WHERE c.created_by = auth.uid()
 GROUP BY c.id, c.name;
 
