@@ -507,61 +507,66 @@ GROUP BY c.id, c.name;
   -- 10. FUNCIÓN DE VERIFICACIÓN
   -- ================================================================
 
-  CREATE OR REPLACE FUNCTION verify_neurolog_setup()
-  RETURNS TEXT AS $$
-  DECLARE
-    result TEXT := '';
-    table_count INTEGER;
-    policy_count INTEGER;
-    function_count INTEGER;
-    category_count INTEGER;
-  BEGIN
-    -- Contar tablas
-SELECT COUNT(*) INTO table_count
-FROM information_schema.tables 
-WHERE table_schema = 'public' 
-  AND table_name IN ('profiles', 'children', 'user_child_relations', 'daily_logs', 'categories', 'audit_logs');
+CREATE OR REPLACE FUNCTION verify_neurolog_setup()
+RETURNS TEXT AS $$
+DECLARE
+  result TEXT := '';
+  table_count INTEGER;
+  policy_count INTEGER;
+  function_count INTEGER;
+  category_count INTEGER;
+  rls_enabled BOOLEAN;
+  -- Define constants
+  SCHEMA_PUBLIC CONSTANT TEXT := 'public';
+  REQUIRED_TABLES CONSTANT TEXT[] := ARRAY['profiles', 'children', 'user_child_relations', 'daily_logs', 'categories', 'audit_logs'];
+  REQUIRED_FUNCTIONS CONSTANT TEXT[] := ARRAY['user_can_access_child', 'user_can_edit_child', 'audit_sensitive_access'];
+BEGIN
+  -- Count tables
+  SELECT COUNT(*) INTO table_count
+  FROM information_schema.tables 
+  WHERE table_schema = SCHEMA_PUBLIC
+    AND table_name = ANY(REQUIRED_TABLES);
+  
+  result := result || 'Tablas creadas: ' || table_count || '/6' || E'\n';
+  
+  -- Count policies
+  SELECT COUNT(*) INTO policy_count
+  FROM pg_policies 
+  WHERE schemaname = SCHEMA_PUBLIC;
+  
+  result := result || 'Políticas RLS: ' || policy_count || E'\n';
 
-result := result || 'Tablas creadas: ' || table_count || '/6' || E'\n';
-
--- Contar políticas (optimizado con JOIN)
-SELECT COUNT(*) INTO policy_count
-FROM pg_policies 
-WHERE schemaname = 'public';
-
-result := result || 'Políticas RLS: ' || policy_count || E'\n';
-
--- Contar funciones (usando IN en lugar de múltiples OR)
-SELECT COUNT(*) INTO function_count
-FROM pg_proc 
-WHERE proname IN ('user_can_access_child', 'user_can_edit_child', 'audit_sensitive_access');
-
-result := result || 'Funciones RPC: ' || function_count || '/3' || E'\n';
-
--- Contar categorías activas
-SELECT COUNT(*) INTO category_count
-FROM categories WHERE is_active = true;
-
-result := result || 'Categorías: ' || category_count || '/10' || E'\n';
-
--- Verificar RLS (versión optimizada)
-SELECT EXISTS (
-  SELECT 1 FROM pg_class c 
+  -- Count functions
+  SELECT COUNT(*) INTO function_count
+  FROM pg_proc 
+  WHERE proname = ANY(REQUIRED_FUNCTIONS);
+  
+  result := result || 'Funciones RPC: ' || function_count || '/3' || E'\n';
+  
+  -- Count active categories
+  SELECT COUNT(*) INTO category_count
+  FROM categories WHERE is_active = true;
+  
+  result := result || 'Categorías: ' || category_count || '/10' || E'\n';
+  
+  -- Verify RLS
+  SELECT relrowsecurity INTO rls_enabled
+  FROM pg_class c 
   JOIN pg_namespace n ON n.oid = c.relnamespace 
-  WHERE n.nspname = 'public' 
-    AND c.relname = 'children' 
-    AND c.relrowsecurity = true
-) INTO rls_enabled;
-
-IF rls_enabled THEN
-  result := result || 'RLS: ✅ Habilitado' || E'\n';
-ELSE
-  result := result || 'RLS: ❌ Deshabilitado' || E'\n';
-END IF;
-
-result := result || E'\n🎉 BASE DE DATOS NEUROLOG CONFIGURADA COMPLETAMENTE';
-
-RETURN result;
+  WHERE n.nspname = SCHEMA_PUBLIC
+    AND c.relname = 'children';
+  
+  IF rls_enabled THEN
+    result := result || 'RLS: ✅ Habilitado' || E'\n';
+  ELSE
+    result := result || 'RLS: ❌ Deshabilitado' || E'\n';
+  END IF;
+  
+  result := result || E'\n🎉 BASE DE DATOS NEUROLOG CONFIGURADA COMPLETAMENTE';
+  
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql;
 
   -- ================================================================
   -- 11. EJECUTAR VERIFICACIÓN FINAL
