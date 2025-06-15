@@ -11,11 +11,11 @@ interface CategoryDistributionProps {
   data: any[];
 }
 
-export function CategoryDistribution({ data }: CategoryDistributionProps) {
+export function CategoryDistribution({ data }: Readonly<CategoryDistributionProps>) {
   // Procesar datos para el gráfico
   const categoryCount = data.reduce((acc, log) => {
-    const category = log.category_name || 'Sin categoría';
-    acc[category] = (acc[category] || 0) + 1;
+    const category = log.category_name ?? 'Sin categoría';
+    acc[category] = (acc[category] ?? 0) + 1;
     return acc;
   }, {});
 
@@ -42,8 +42,11 @@ export function CategoryDistribution({ data }: CategoryDistributionProps) {
             paddingAngle={5}
             dataKey="value"
           >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            {chartData.map((entry) => (
+              <Cell 
+                key={`cell-${entry.name}-${entry.value}`} 
+                fill={COLORS[chartData.findIndex(item => item.name === entry.name) % COLORS.length]} 
+              />
             ))}
           </Pie>
           <Tooltip />

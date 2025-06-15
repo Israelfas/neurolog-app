@@ -2,12 +2,20 @@
 // Componente de calendario base
 
 'use client';
-
 import * as React from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
 import { DayPicker } from 'react-day-picker';
-
 import { cn } from '@/lib/utils';
+
+// Extracted icon components
+const CalendarNavIcons = {
+  IconLeft: ({ ...props }: React.ComponentProps<typeof ChevronLeftIcon>) => (
+    <ChevronLeftIcon className="h-4 w-4" {...props} />
+  ),
+  IconRight: ({ ...props }: React.ComponentProps<typeof ChevronRightIcon>) => (
+    <ChevronRightIcon className="h-4 w-4" {...props} />
+  ),
+};
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
@@ -15,6 +23,7 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  components,
   ...props
 }: CalendarProps) {
   return (
@@ -60,13 +69,13 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeftIcon className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRightIcon className="h-4 w-4" />,
+        ...CalendarNavIcons,
+        ...components,
       }}
       {...props}
     />
   );
 }
-Calendar.displayName = 'Calendar';
 
+Calendar.displayName = 'Calendar';
 export { Calendar };

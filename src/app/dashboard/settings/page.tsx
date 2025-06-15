@@ -12,8 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/components/providers/AuthProvider'
 import { useToast } from '@/components/ui/use-toast'
-import { 
-  Settings, 
+import {  
   User, 
   Bell, 
   Shield, 
@@ -91,7 +90,7 @@ export default function SettingsPage() {
       console.error('Error updating profile:', error)
       toast({
         title: "Error al actualizar",
-        description: error.message || "No se pudieron guardar los cambios.",
+        description: error.message ?? "No se pudieron guardar los cambios.",
         variant: "destructive"
       })
     } finally {
@@ -173,28 +172,33 @@ export default function SettingsPage() {
 
       {/* ✅ INFORMACIÓN DEL USUARIO ACTUAL */}
       <Card className="bg-blue-50 border-blue-200">
-        <CardContent className="pt-6">
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">
-                {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div>
-              <p className="font-medium text-gray-900">
-                {user.full_name || 'Usuario'}
-              </p>
-              <p className="text-sm text-gray-600">{user.email}</p>
-              <p className="text-xs text-blue-600 capitalize">
-                {user.role === 'parent' ? 'Padre/Madre' :
-                 user.role === 'teacher' ? 'Docente' :
-                 user.role === 'specialist' ? 'Especialista' : 
-                 user.role === 'admin' ? 'Administrador' : 'Usuario'}
-              </p>
-            </div>
+      <CardContent className="pt-6">
+        <div className="flex items-center space-x-4">
+          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+            <span className="text-white font-bold text-lg">
+              {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
+            </span>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <p className="font-medium text-gray-900">
+              {user.full_name || 'Usuario'}
+            </p>
+            <p className="text-sm text-gray-600">{user.email}</p>
+            <p className="text-xs text-blue-600 capitalize">
+              {(() => {
+                switch (user.role) {
+                  case 'parent': return 'Padre/Madre';
+                  case 'teacher': return 'Docente';
+                  case 'specialist': return 'Especialista';
+                  case 'admin': return 'Administrador';
+                  default: return 'Usuario';
+                }
+              })()}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
 
       {/* Perfil de Usuario */}
       <Card>
@@ -236,25 +240,30 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="role">Rol en la aplicación</Label>
-            <Select 
-              value={profileData.role} 
-              onValueChange={(value) => setProfileData(prev => ({ ...prev, role: value as any }))}
-              disabled={!isEditing}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="parent">Padre/Madre</SelectItem>
-                <SelectItem value="teacher">Docente</SelectItem>
-                <SelectItem value="specialist">Especialista</SelectItem>
-                {user.role === 'admin' && (
-                  <SelectItem value="admin">Administrador</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
+          <Label htmlFor="role">Rol en la aplicación</Label>
+          <Select 
+            value={profileData.role} 
+            onValueChange={(value) => {
+            
+              if (value === "parent") {
+                setProfileData(prev => ({ ...prev, role: value }))
+              }
+            }}
+            disabled={!isEditing}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Selecciona un rol" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="parent">Padre/Madre</SelectItem>
+              <SelectItem value="teacher" disabled>Docente (no disponible)</SelectItem>
+              <SelectItem value="specialist" disabled>Especialista (no disponible)</SelectItem>
+              {user.role === 'admin' && (
+                <SelectItem value="admin" disabled>Administrador (no disponible)</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
 
           <div className="flex justify-end space-x-2 pt-4">
             {isEditing ? (

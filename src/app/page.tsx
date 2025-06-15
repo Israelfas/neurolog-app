@@ -53,19 +53,19 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 text-center">
         <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-          Registro especializado para 
-          <span className="text-blue-600"> niños con NEE</span>
+          Registro especializado para{' '}
+          <span className="text-blue-600">niños con NEE</span>
         </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-          Una plataforma integral para el seguimiento y documentación del desarrollo 
-          de niños con necesidades educativas especiales, facilitando la colaboración 
+        <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
+          Una plataforma integral para el seguimiento y documentación del desarrollo
+          de niños con necesidades educativas especiales, facilitando la colaboración
           entre todos los cuidadores.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button size="lg" asChild>
+          <Button size="lg" asChild className="hover:shadow-md transition-shadow">
             <Link href="/auth/register">Comenzar gratis</Link>
           </Button>
-          <Button variant="outline" size="lg" asChild>
+          <Button variant="outline" size="lg" asChild className="hover:bg-gray-50">
             <Link href="#features">Conocer más</Link>
           </Button>
         </div>
@@ -74,31 +74,31 @@ export default function HomePage() {
       {/* Features Section */}
       <section id="features" className="container mx-auto px-4 py-20">
         <div className="text-center mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Herramientas especializadas
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Diseñado específicamente para las necesidades de seguimiento en NEE
           </p>
         </div>
         
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {features.map((feature, index) => (
-            <Card key={index} className="text-center">
-              <CardHeader>
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <feature.icon className="h-6 w-6 text-blue-600" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {features.map((feature) => (
+            <Card key={feature.title} className="text-center hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-4">
+                <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <feature.icon className="h-7 w-7 text-blue-600" />
                 </div>
-                <CardTitle className="text-lg">{feature.title}</CardTitle>
+                <CardTitle className="text-xl">{feature.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <CardDescription>{feature.description}</CardDescription>
+                <p className="text-gray-600">{feature.description}</p>
               </CardContent>
             </Card>
           ))}
         </div>
       </section>
-
+      
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20">
         <Card className="bg-blue-600 text-white text-center p-8">

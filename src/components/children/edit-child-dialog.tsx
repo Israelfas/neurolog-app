@@ -39,8 +39,7 @@ interface FormData {
   notes: string
 }
 
-export function EditChildDialog({ child, open, onOpenChange }: EditChildDialogProps) {
-  const [formData, setFormData] = useState<FormData>({
+export function EditChildDialog({ child, open, onOpenChange }: Readonly<EditChildDialogProps>) {  const [formData, setFormData] = useState<FormData>({
     name: '',
     birth_date: '',
     diagnosis: '',
@@ -55,9 +54,9 @@ export function EditChildDialog({ child, open, onOpenChange }: EditChildDialogPr
     if (open && child) {
       setFormData({
         name: child.name || '',
-        birth_date: child.birth_date || '',
-        diagnosis: child.diagnosis || '',
-        notes: child.notes || ''
+        birth_date: child.birth_date ?? '',
+        diagnosis: child.diagnosis ?? '',
+        notes: child.notes ?? ''
       })
     }
   }, [open, child])
@@ -83,9 +82,9 @@ export function EditChildDialog({ child, open, onOpenChange }: EditChildDialogPr
     try {
       const updates = {
         name: formData.name.trim(),
-        birth_date: formData.birth_date || null,
-        diagnosis: formData.diagnosis.trim() || null,
-        notes: formData.notes.trim() || null
+        birth_date: formData.birth_date ?? null,
+        diagnosis: formData.diagnosis.trim() ?? null,
+        notes: formData.notes.trim() ?? null
       }
 
       await updateChild(child.id, updates)
@@ -99,7 +98,7 @@ export function EditChildDialog({ child, open, onOpenChange }: EditChildDialogPr
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "No se pudo actualizar la información",
+        description: error.message ?? "No se pudo actualizar la información",
         variant: "destructive",
       })
     } finally {
